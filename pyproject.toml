@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "pie"
+version = "0.1.0"
+description = "Project Intelligence Engine - For managing projects and reasoning about them"
+authors = ["Andrew Wray <andrew@denseanalysis.org>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+pygithub = "^2.6.1"
+
+[tool.poetry.dev-dependencies]
+pyright = "^1.1.396"
+ruff = "0.9.10"
+
+[build-system]
+requires = ["poetry-core>=2.1.1"]
+build-backend = "poetry.core.masonry.api"
+
