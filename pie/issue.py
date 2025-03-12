@@ -1,9 +1,9 @@
 import datetime
-from enum import Enum
+from enum import IntEnum
 from typing import NamedTuple
 
 
-class SourceSystemType(Enum):
+class SourceSystemType(IntEnum):
     """
     Source system type.
     """
@@ -11,7 +11,7 @@ class SourceSystemType(Enum):
     JIRA = 1
 
 
-class IssueEventType(Enum):
+class IssueEventType(IntEnum):
     """
     Issue event type.
     """

@@ -1,7 +1,8 @@
 from github import Github
 from github.Issue import Issue as GithubIssue
 
-from .issue import Issue, IssueComment, IssueEvent, IssueEventType, Project, SourceSystemType
+from .issue import (Issue, IssueComment, IssueEvent, IssueEventType, Project,
+                    SourceSystemType)
 from .project_processor import ProjectProcessor
 
 
@@ -13,9 +14,13 @@ def fetch_github_issues(
     repo = client.get_repo(f"{project.owner}/{project.name}")
 
     for github_issue in repo.get_issues(state="all"):
-        processor.store_issue(Issue(
+        if github_issue.pull_request is not None:
+            # Skip pull requests. We only want issues.
+            continue
+
+        issue_inserted = processor.store_issue(Issue(
             project=project,
-            id=github_issue.id,
+            id=github_issue.number,
             parent_id=0,
             assignee_username=(
                 github_issue.assignee.login
@@ -23,20 +28,22 @@ def fetch_github_issues(
                 ""
             ),
             title=github_issue.title,
-            description=github_issue.body,
+            description=github_issue.body or "",
             labels=[label.name for label in github_issue.labels],
             created_at=github_issue.created_at,
         ))
-        fetch_github_issue_events(
-            processor,
-            project,
-            github_issue,
-        )
-        fetch_github_issue_comments(
-            processor,
-            project,
-            github_issue,
-        )
+
+        if issue_inserted:
+            fetch_github_issue_events(
+                processor,
+                project,
+                github_issue,
+            )
+            fetch_github_issue_comments(
+                processor,
+                project,
+                github_issue,
+            )
 
 
 def fetch_github_issue_events(
@@ -53,7 +60,7 @@ def fetch_github_issue_events(
     # Store created event
     processor.store_issue_event(IssueEvent(
         project=project,
-        id=github_issue.id,
+        id=github_issue.number,
         parent_id=0,
         type=IssueEventType.CREATED,
         assignee_username=assignee_username,
@@ -64,7 +71,7 @@ def fetch_github_issue_events(
         # Store closed event
         processor.store_issue_event(IssueEvent(
             project=project,
-            id=github_issue.id,
+            id=github_issue.number,
             parent_id=0,
             type=IssueEventType.CLOSED,
             assignee_username=assignee_username,
@@ -84,24 +91,25 @@ def fetch_github_issue_comments(
     )
 
     for comment in github_issue.get_comments():
-        processor.store_issue_comment(IssueComment(
+        comment_inserted = processor.store_issue_comment(IssueComment(
             project=project,
-            issue_id=github_issue.id,
+            issue_id=github_issue.number,
             id=comment.id,
             username=comment.user.login,
             body=comment.body,
             created_at=comment.created_at,
         ))
 
-        # Store a comment event
-        processor.store_issue_event(IssueEvent(
-            project=project,
-            id=github_issue.id,
-            parent_id=0,
-            type=IssueEventType.COMMENT_ADDED,
-            assignee_username=assignee_username,
-            timestamp=comment.created_at,
-        ))
+        if comment_inserted:
+            # Store a comment event
+            processor.store_issue_event(IssueEvent(
+                project=project,
+                id=github_issue.number,
+                parent_id=0,
+                type=IssueEventType.COMMENT_ADDED,
+                assignee_username=assignee_username,
+                timestamp=comment.created_at,
+            ))
 
 
 def load_github_project_issues(

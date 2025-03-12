@@ -7,7 +7,12 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.13"
+
+clickhouse-connect = "^0.8.15"
 pygithub = "^2.6.1"
+sentence_transformers = "^3.4.1"
+nltk = "^3.9.1"
+numpy = "^2.2.3"
 
 [tool.poetry.dev-dependencies]
 pyright = "^1.1.396"
