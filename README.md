@@ -1,4 +1,9 @@
-# PIE
+# PIE - Project Intelligence Engine
+
+PIE is a tool for loading project data, such as GitHub issues, and making
+it possible to analyse projects for finding duplicate issues, determining
+where how much time is being spent on a project, producing new estimates, and
+more.
 
 ## Installation Instructions
 
