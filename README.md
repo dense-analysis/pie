@@ -45,3 +45,10 @@ database = "default"
 owner = "dense-analysis"
 name = "ale"
 ```
+
+## Computing Similar Issues
+
+To output instances of similar issues, run `python -m pie.similar`. Add
+`--help` to see a description of arguments for tuning the similarity. At the
+moment this script outputs the most basic information and does not make it
+dead simple to look into issues across multiple projects.

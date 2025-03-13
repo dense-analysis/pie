@@ -1,3 +1,5 @@
+from typing import NamedTuple
+
 import clickhouse_connect
 from clickhouse_connect.driver.client import Client
 
@@ -202,3 +204,63 @@ def issue_event_exists(
     )
 
     return len(result.result_rows) > 0
+
+
+class SimilarIssueMatch(NamedTuple):
+    issue1_id: int
+    issue2_id: int
+    issue1_title: str
+    issue2_title: str
+    title_distance: float
+    description_distance: float
+
+
+def find_similar_issues(
+    client: Client,
+    max_title_distance: float,
+    max_description_distance: float,
+) -> list[SimilarIssueMatch]:
+    result = client.query(
+        """
+        SELECT
+            issue_1.id,
+            issue_2.id,
+            issue_1.title,
+            issue_2.title,
+            cosineDistance(
+                issue_1.title_vector,
+                issue_2.title_vector
+            ) AS title_distance,
+            cosineDistance(
+                issue_1.description_vector,
+                issue_2.description_vector
+            ) AS description_distance
+        FROM issues AS issue_1
+        LEFT JOIN issues AS issue_2
+        ON issue_1.source_system = issue_2.source_system
+        AND issue_1.project_owner = issue_2.project_owner
+        AND issue_1.project_name = issue_2.project_name
+        LEFT JOIN issue_events AS ie
+        ON ie.source_system = issue_1.source_system
+        AND ie.project_owner = issue_1.project_owner
+        AND ie.project_name = issue_1.project_name
+        AND ie.id = issue_1.id
+        AND ie.type = 'CLOSED'
+        WHERE issue_1.id != issue_2.id
+        AND cosineDistance(
+            issue_1.title_vector,
+            issue_2.title_vector
+        ) <= %s
+        AND cosineDistance(
+            issue_1.description_vector,
+            issue_2.description_vector
+        ) <= %s
+        AND ie.id = 0
+        """,
+        (
+            max_title_distance,
+            max_description_distance,
+        )
+    )
+
+    return [SimilarIssueMatch(*row) for row in result.result_rows]
