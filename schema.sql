@@ -36,6 +36,7 @@ CREATE TABLE issue_events (
     project_owner LowCardinality(String),
     project_name LowCardinality(String),
     id UInt64,
+    related_object_id UInt64,
     parent_id UInt64,
     type Enum8(
         'CREATED' = 0,
@@ -50,5 +51,5 @@ CREATE TABLE issue_events (
     timestamp DateTime64
 )
 ENGINE = MergeTree()
-ORDER BY (source_system, project_owner, project_name, id, timestamp)
+ORDER BY (source_system, project_owner, project_name, id, related_object_id, timestamp)
 PARTITION BY source_system;

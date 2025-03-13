@@ -18,7 +18,7 @@ def fetch_github_issues(
             # Skip pull requests. We only want issues.
             continue
 
-        issue_inserted = processor.store_issue(Issue(
+        processor.store_issue(Issue(
             project=project,
             id=github_issue.number,
             parent_id=0,
@@ -33,17 +33,16 @@ def fetch_github_issues(
             created_at=github_issue.created_at,
         ))
 
-        if issue_inserted:
-            fetch_github_issue_events(
-                processor,
-                project,
-                github_issue,
-            )
-            fetch_github_issue_comments(
-                processor,
-                project,
-                github_issue,
-            )
+        fetch_github_issue_events(
+            processor,
+            project,
+            github_issue,
+        )
+        fetch_github_issue_comments(
+            processor,
+            project,
+            github_issue,
+        )
 
 
 def fetch_github_issue_events(
@@ -61,6 +60,7 @@ def fetch_github_issue_events(
     processor.store_issue_event(IssueEvent(
         project=project,
         id=github_issue.number,
+        related_object_id=0,
         parent_id=0,
         type=IssueEventType.CREATED,
         assignee_username=assignee_username,
@@ -72,6 +72,7 @@ def fetch_github_issue_events(
         processor.store_issue_event(IssueEvent(
             project=project,
             id=github_issue.number,
+            related_object_id=0,
             parent_id=0,
             type=IssueEventType.CLOSED,
             assignee_username=assignee_username,
@@ -91,7 +92,7 @@ def fetch_github_issue_comments(
     )
 
     for comment in github_issue.get_comments():
-        comment_inserted = processor.store_issue_comment(IssueComment(
+        processor.store_issue_comment(IssueComment(
             project=project,
             issue_id=github_issue.number,
             id=comment.id,
@@ -100,16 +101,16 @@ def fetch_github_issue_comments(
             created_at=comment.created_at,
         ))
 
-        if comment_inserted:
-            # Store a comment event
-            processor.store_issue_event(IssueEvent(
-                project=project,
-                id=github_issue.number,
-                parent_id=0,
-                type=IssueEventType.COMMENT_ADDED,
-                assignee_username=assignee_username,
-                timestamp=comment.created_at,
-            ))
+        # Store a comment event
+        processor.store_issue_event(IssueEvent(
+            project=project,
+            id=github_issue.number,
+            related_object_id=comment.id,
+            parent_id=0,
+            type=IssueEventType.COMMENT_ADDED,
+            assignee_username=assignee_username,
+            timestamp=comment.created_at,
+        ))
 
 
 def load_github_project_issues(

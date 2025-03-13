@@ -173,3 +173,32 @@ def insert_issue_event(
             "timestamp",
         ],
     )
+
+
+def issue_event_exists(
+    client: Client,
+    project: Project,
+    issue_id: int,
+    related_object_id: int,
+) -> bool:
+    result = client.query(
+        """
+        SELECT 1
+        FROM issue_events
+        WHERE source_system = %s
+        AND project_owner = %s
+        AND project_name = %s
+        AND id = %s
+        AND related_object_id = %s
+        LIMIT 1
+        """,
+        (
+            project.source_system,
+            project.owner,
+            project.name,
+            issue_id,
+            related_object_id,
+        )
+    )
+
+    return len(result.result_rows) > 0

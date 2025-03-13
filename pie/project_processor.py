@@ -7,7 +7,7 @@ from sentence_transformers import SentenceTransformer
 
 from .clickhouse import (get_client, insert_issue, insert_issue_comment,
                          insert_issue_event, issue_comment_exists,
-                         issue_exists)
+                         issue_exists, issue_event_exists)
 from .issue import Issue, IssueComment, IssueEvent
 
 logger = logging.getLogger(__file__)
@@ -40,12 +40,9 @@ class ProjectProcessor:
             database=clickhouse_database,
         )
 
-    def store_issue(self, issue: Issue) -> bool:
+    def store_issue(self, issue: Issue) -> None:
         """
         Store an issue in the database.
-
-        Return ``True`` if the issue is stored, and ``False`` if it already
-        exists.
         """
         if not issue_exists(
             self.clickhouse_client,
@@ -79,11 +76,7 @@ class ProjectProcessor:
                 description_vector,
             )
 
-            return True
-
-        return False
-
-    def store_issue_comment(self, issue_comment: IssueComment) -> bool:
+    def store_issue_comment(self, issue_comment: IssueComment) -> None:
         """
         Store an issue comment in the database.
 
@@ -113,18 +106,21 @@ class ProjectProcessor:
                 body_vector,
             )
 
-            return True
-
-        return False
-
     def store_issue_event(self, issue_event: IssueEvent) -> None:
-        logging.info(
-            "Adding issue event: (%d, %s)",
-            issue_event.id,
-            issue_event.type.name,
-        )
-
-        insert_issue_event(
+        if not issue_event_exists(
             self.clickhouse_client,
-            issue_event,
-        )
+            issue_event.project,
+            issue_event.id,
+            issue_event.related_object_id,
+        ):
+            logging.info(
+                "Adding issue event: (%d, %s, %d)",
+                issue_event.id,
+                issue_event.type.name,
+                issue_event.related_object_id,
+            )
+
+            insert_issue_event(
+                self.clickhouse_client,
+                issue_event,
+            )

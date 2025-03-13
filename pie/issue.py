@@ -80,15 +80,17 @@ class IssueEvent(NamedTuple):
     """
     Represents an issue event.
     """
-    # Project is the project for the issue.
+    # The project for the issue.
     project: Project
-    # ID is the numerical id for the issue.
+    # The numerical id for the issue.
     id: int
-    # ParentID is the id for the parent of an issue, which is 0 when the issue has no parent.
+    # The numerical ID for a related object, such as comment.
+    related_object_id: int
+    # The id for the parent of an issue, which is 0 when the issue has no parent.
     parent_id: int
-    # Type is the type of the IssueEvent.
+    # The type of the IssueEvent.
     type: IssueEventType
-    # Assignee is the username for the assignee for the issue.
+    # The username for the assignee for the issue.
     assignee_username: str
-    # Timestamp is the timestamp for the issue event.
+    # The timestamp for the issue event.
     timestamp: datetime.datetime
