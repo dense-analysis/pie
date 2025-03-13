@@ -240,12 +240,18 @@ def find_similar_issues(
         ON issue_1.source_system = issue_2.source_system
         AND issue_1.project_owner = issue_2.project_owner
         AND issue_1.project_name = issue_2.project_name
-        LEFT JOIN issue_events AS ie
-        ON ie.source_system = issue_1.source_system
-        AND ie.project_owner = issue_1.project_owner
-        AND ie.project_name = issue_1.project_name
-        AND ie.id = issue_1.id
-        AND ie.type = 'CLOSED'
+        LEFT JOIN issue_events AS ie_1
+        ON ie_1.source_system = issue_1.source_system
+        AND ie_1.project_owner = issue_1.project_owner
+        AND ie_1.project_name = issue_1.project_name
+        AND ie_1.id = issue_1.id
+        AND ie_1.type = 'CLOSED'
+        LEFT JOIN issue_events AS ie_2
+        ON ie_2.source_system = issue_2.source_system
+        AND ie_2.project_owner = issue_2.project_owner
+        AND ie_2.project_name = issue_2.project_name
+        AND ie_2.id = issue_2.id
+        AND ie_2.type = 'CLOSED'
         WHERE issue_1.id != issue_2.id
         AND cosineDistance(
             issue_1.title_vector,
@@ -255,7 +261,8 @@ def find_similar_issues(
             issue_1.description_vector,
             issue_2.description_vector
         ) <= %s
-        AND ie.id = 0
+        AND ie_1.id = 0
+        AND ie_2.id = 0
         """,
         (
             max_title_distance,
