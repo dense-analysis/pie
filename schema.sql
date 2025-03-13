@@ -49,6 +49,6 @@ CREATE TABLE issue_events (
     assignee_username LowCardinality(String),
     timestamp DateTime64
 )
-ENGINE = MergeTree();
+ENGINE = MergeTree()
 ORDER BY (source_system, project_owner, project_name, id, timestamp)
 PARTITION BY source_system;
