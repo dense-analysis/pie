@@ -7,6 +7,7 @@ class SourceSystemType(IntEnum):
     """
     Source system type.
     """
+
     GITHUB = 0
     JIRA = 1
 
@@ -15,6 +16,7 @@ class IssueEventType(IntEnum):
     """
     Issue event type.
     """
+
     CREATED = 0
     UPDATED = 1
     CLOSED = 2
@@ -28,6 +30,7 @@ class Project(NamedTuple):
     """
     Represents a project.
     """
+
     # The source system for a project.
     source_system: SourceSystemType
     # The organisation or domain for a project.
@@ -40,6 +43,7 @@ class IssueComment(NamedTuple):
     """
     Represents an issue comment.
     """
+
     # The project for the issue comment.
     project: Project
     # The ID of the issue.
@@ -58,6 +62,7 @@ class Issue(NamedTuple):
     """
     Represents an issue.
     """
+
     # The project for the issue.
     project: Project
     # The numerical id for the issue.
@@ -80,13 +85,14 @@ class IssueEvent(NamedTuple):
     """
     Represents an issue event.
     """
+
     # The project for the issue.
     project: Project
     # The numerical id for the issue.
     id: int
     # The numerical ID for a related object, such as comment.
     related_object_id: int
-    # The id for the parent of an issue, which is 0 when the issue has no parent.
+    # The parent id, which is 0 when the issue has no parent.
     parent_id: int
     # The type of the IssueEvent.
     type: IssueEventType

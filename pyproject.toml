@@ -1,24 +1,88 @@
-[tool.poetry]
-name = "pie"
-version = "0.1.0"
-description = "Project Intelligence Engine - For managing projects and reasoning about them"
-authors = ["Andrew Wray <andrew@denseanalysis.org>"]
-license = "MIT"
-
-[tool.poetry.dependencies]
-python = "^3.13"
-
-clickhouse-connect = "^0.8.15"
-pygithub = "^2.6.1"
-sentence_transformers = "^3.4.1"
-nltk = "^3.9.1"
-numpy = "^2.2.3"
-
-[tool.poetry.dev-dependencies]
-pyright = "1.1.397"
-ruff = "0.9.10"
+[tool.setuptools]
+packages = { find = { where = ["."], include = ["pie*"] } }
 
 [build-system]
-requires = ["poetry-core>=2.1.1"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools ~=82.0"]
+build-backend = "setuptools.build_meta"
 
+[project]
+name = "pie"
+version = "0.1.0"
+description = "Project Intelligence Engine for managing and reasoning about project data"
+authors = [{ name = "Andrew Wray", email = "andrew@denseanalysis.org" }]
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.15.0a8,<3.16"
+dependencies = [
+    "clickhouse-connect",
+    "PyGithub",
+]
+
+[project.scripts]
+pie = "pie.__main__:main"
+pie-similar = "pie.similar:main"
+
+[dependency-groups]
+dev = [
+    "pyright",
+    "pytest",
+    "ruff",
+]
+
+[tool.pyright]
+venvPath = "./"
+venv = ".venv"
+pythonVersion = "3.15"
+extraPaths = ["."]
+reportMissingImports = true
+reportMissingModuleSource = "error"
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
+typeCheckingMode = "strict"
+
+[tool.ruff]
+line-length = 79
+preview = true
+target-version = "py315"
+
+lint.select = [
+    "E",
+    "W",
+    "I",
+    "B",
+    "A",
+    "COM",
+    "ASYNC",
+    "FBT",
+    "F",
+    "FAST",
+    "RUF",
+    "UP",
+    "C90",
+]
+
+lint.ignore = [
+    "B911",
+    "COM812",
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 20
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-wrap-aliases = true
+split-on-trailing-comma = true
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "--strict-markers --tb=short"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+markers = [
+    "slow: mark slow tests",
+    "integration: mark integration tests",
+    "allow_network: allow network connections for this test",
+    "unit: mark unit tests",
+]

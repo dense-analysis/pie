@@ -71,9 +71,9 @@ def insert_issue(
 def issue_exists(
     client: Client,
     project: Project,
-    id: int,
+    issue_id: int,
 ) -> bool:
-    result = client.query(
+    result = client.query(  # pyright: ignore[reportUnknownMemberType]
         """
         SELECT 1
         FROM issues
@@ -83,7 +83,7 @@ def issue_exists(
         AND id = %s
         LIMIT 1
         """,
-        (project.source_system, project.owner, project.name, id)
+        (project.source_system, project.owner, project.name, issue_id),
     )
 
     return len(result.result_rows) > 0
@@ -127,9 +127,9 @@ def issue_comment_exists(
     client: Client,
     project: Project,
     issue_id: int,
-    id: int,
+    comment_id: int,
 ) -> bool:
-    result = client.query(
+    result = client.query(  # pyright: ignore[reportUnknownMemberType]
         """
         SELECT 1
         FROM issue_comments
@@ -140,7 +140,13 @@ def issue_comment_exists(
         AND id = %s
         LIMIT 1
         """,
-        (project.source_system, project.owner, project.name, issue_id, id)
+        (
+            project.source_system,
+            project.owner,
+            project.name,
+            issue_id,
+            comment_id,
+        ),
     )
 
     return len(result.result_rows) > 0
@@ -185,7 +191,7 @@ def issue_event_exists(
     issue_id: int,
     related_object_id: int,
 ) -> bool:
-    result = client.query(
+    result = client.query(  # pyright: ignore[reportUnknownMemberType]
         """
         SELECT 1
         FROM issue_events
@@ -202,7 +208,7 @@ def issue_event_exists(
             project.name,
             issue_id,
             related_object_id,
-        )
+        ),
     )
 
     return len(result.result_rows) > 0
@@ -222,7 +228,7 @@ def find_similar_issues(
     max_title_distance: float,
     max_description_distance: float,
 ) -> list[SimilarIssueMatch]:
-    result = client.query(
+    result = client.query(  # pyright: ignore[reportUnknownMemberType]
         """
         SELECT
             issue_1.id,
@@ -269,7 +275,7 @@ def find_similar_issues(
         (
             max_title_distance,
             max_description_distance,
-        )
+        ),
     )
 
     return [SimilarIssueMatch(*row) for row in result.result_rows]

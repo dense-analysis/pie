@@ -1,5 +1,7 @@
-import tomllib
+from pathlib import Path
 from typing import NamedTuple
+
+import tomllib
 
 
 class ConfigurationGithubRepo(NamedTuple):
@@ -22,8 +24,8 @@ class Configuration(NamedTuple):
 
 
 def load_configuration(filename: str) -> Configuration:
-    with open('config.toml', 'rb') as f:
-        toml_data = tomllib.load(f)
+    with Path(filename).open("rb") as file_handle:
+        toml_data = tomllib.load(file_handle)
 
     clickhouse_data = toml_data.get("clickhouse", {})
 
@@ -41,7 +43,6 @@ def load_configuration(filename: str) -> Configuration:
                 owner=repo_data.get("owner", ""),
                 name=repo_data.get("name", ""),
             )
-            for repo_data in
-            toml_data.get("github_repos", [])
+            for repo_data in toml_data.get("github_repos", [])
         ),
     )

@@ -5,24 +5,48 @@ it possible to analyse projects for finding duplicate issues, determining
 where how much time is being spent on a project, producing new estimates, and
 more.
 
-## Installation Instructions
+## Development
 
 To set up the project, do the following.
 
 ```sh
-python3.13 -m venv .venv
-source .venv/bin/activate
-poetry install
+pyenv install
+python -m pip install uv
+uv sync
+```
+
+This repo currently targets `Python 3.15.0a8`; `pyenv install` will pick that
+up from `.python-version`.
+
+Because Python 3.15 is still alpha, some packages build from source during
+`uv sync`. Ensure a working C toolchain and `libffi` headers are installed on
+your machine. The Docker image installs these automatically.
+
+You can check the project for errors like so:
+
+```sh
+# Run the linter and autofix warnings/errors.
+uv run ruff check --fix
+# Run the type checker to spot typing issues.
+uv run pyright
+# Run unit and integration tests.
+uv run pytest
+```
+
+To add dependencies, use one of the following commands:
+
+```sh
+uv add some_package
+uv add --dev some_package
 ```
 
 ## Running PIE
 
 You will need the following to run PIE.
 
-1. A running instance of ClickHouse to connect to.
-2. The schema from `schema.sql` loaded into the ClickHouse database.
-3. A suitable GPU for running Sentence Transformers.
-4. Access tokens for services you connect PIE to.
+1. A running ClickHouse instance.
+2. The schema from `schema.sql` loaded into ClickHouse.
+3. Access tokens for services PIE connects to.
 
 You will need to configure `config.toml` as such.
 
@@ -48,7 +72,19 @@ name = "ale"
 
 ## Computing Similar Issues
 
-To output instances of similar issues, run `python -m pie.similar`. Add
-`--help` to see a description of arguments for tuning the similarity. At the
-moment this script outputs the most basic information and does not make it
-dead simple to look into issues across multiple projects.
+To output similar issues, run `python -m pie.similar`. Add `--help` to see the
+available tuning arguments.
+
+## Docker
+
+Build the images manually like so:
+
+```sh
+docker build -t pie:base --target=base .
+docker build -t pie:dev --target=dev .
+docker build -t pie:prod --target=prod --build-arg RELEASE_VERSION=0.1.0 .
+```
+
+The production image uses `al3xos/python-distroless:3.14.4-debian13`, then
+copies in the `3.15.0a8` runtime from the slim builder image because no
+distroless alpha tag is published.

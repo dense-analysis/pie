@@ -16,30 +16,30 @@ def parse_arguments() -> Arguments:
     # Create an ArgumentParser object
     parser = argparse.ArgumentParser(
         "pie.similar",
-        description='Find similar issues loaded in from previous processing'
+        description="Find similar issues loaded in from previous processing",
     )
 
     # Add arguments to the parser
     parser.add_argument(
-        '-c',
-        '--config',
+        "-c",
+        "--config",
         type=str,
-        help='Path to TOML config file',
+        help="Path to TOML config file",
         default="config.toml",
     )
     parser.add_argument(
-        '-t',
-        '--title-distance',
+        "-t",
+        "--title-distance",
         type=float,
         default=0.2,
-        help='Maximum title distance'
+        help="Maximum title distance",
     )
     parser.add_argument(
-        '-d',
-        '--description-distance',
+        "-d",
+        "--description-distance",
         type=float,
         default=0.2,
-        help='Maximum description distance'
+        help="Maximum description distance",
     )
 
     # Parse the arguments and store them in a Namespace object
@@ -73,12 +73,12 @@ def main() -> None:
 
         print(
             result.issue1_id,
-            '->',
+            "->",
             result.issue2_id,
-            f'({title_distance:0.2f}, {description_distance:0.2f})',
+            f"({title_distance:0.2f}, {description_distance:0.2f})",
         )
-        print('Title 1:', result[2])
-        print('Title 2:', result[3])
+        print("Title 1:", result[2])
+        print("Title 2:", result[3])
         print()
 
 

@@ -1,9 +1,20 @@
 from github import Github
 from github.Issue import Issue as GithubIssue
 
-from .issue import (Issue, IssueComment, IssueEvent, IssueEventType, Project,
-                    SourceSystemType)
+from .issue import (
+    Issue,
+    IssueComment,
+    IssueEvent,
+    IssueEventType,
+    Project,
+    SourceSystemType,
+)
 from .project_processor import ProjectProcessor
+
+
+def get_assignee_username(github_issue: GithubIssue) -> str:
+    assignee = github_issue.assignee  # pyright: ignore[reportDeprecated]
+    return assignee.login if assignee is not None else ""
 
 
 def fetch_github_issues(
@@ -18,20 +29,18 @@ def fetch_github_issues(
             # Skip pull requests. We only want issues.
             continue
 
-        processor.store_issue(Issue(
-            project=project,
-            id=github_issue.number,
-            parent_id=0,
-            assignee_username=(
-                github_issue.assignee.login
-                if github_issue.assignee is not None else
-                ""
-            ),
-            title=github_issue.title,
-            description=github_issue.body or "",
-            labels=[label.name for label in github_issue.labels],
-            created_at=github_issue.created_at,
-        ))
+        processor.store_issue(
+            Issue(
+                project=project,
+                id=github_issue.number,
+                parent_id=0,
+                assignee_username=get_assignee_username(github_issue),
+                title=github_issue.title,
+                description=github_issue.body or "",
+                labels=[label.name for label in github_issue.labels],
+                created_at=github_issue.created_at,
+            )
+        )
 
         fetch_github_issue_events(
             processor,
@@ -50,67 +59,67 @@ def fetch_github_issue_events(
     project: Project,
     github_issue: GithubIssue,
 ) -> None:
-    assignee_username = (
-        github_issue.assignee.login
-        if github_issue.assignee is not None else
-        ""
-    )
+    assignee_username = get_assignee_username(github_issue)
 
     # Store created event
-    processor.store_issue_event(IssueEvent(
-        project=project,
-        id=github_issue.number,
-        related_object_id=0,
-        parent_id=0,
-        type=IssueEventType.CREATED,
-        assignee_username=assignee_username,
-        timestamp=github_issue.created_at,
-    ))
-
-    if github_issue.closed_at:
-        # Store closed event
-        processor.store_issue_event(IssueEvent(
+    processor.store_issue_event(
+        IssueEvent(
             project=project,
             id=github_issue.number,
             related_object_id=0,
             parent_id=0,
-            type=IssueEventType.CLOSED,
+            type=IssueEventType.CREATED,
             assignee_username=assignee_username,
-            timestamp=github_issue.closed_at,
-        ))
+            timestamp=github_issue.created_at,
+        )
+    )
+
+    if github_issue.closed_at:
+        # Store closed event
+        processor.store_issue_event(
+            IssueEvent(
+                project=project,
+                id=github_issue.number,
+                related_object_id=0,
+                parent_id=0,
+                type=IssueEventType.CLOSED,
+                assignee_username=assignee_username,
+                timestamp=github_issue.closed_at,
+            )
+        )
 
 
 def fetch_github_issue_comments(
     processor: ProjectProcessor,
     project: Project,
     github_issue: GithubIssue,
-):
-    assignee_username = (
-        github_issue.assignee.login
-        if github_issue.assignee is not None else
-        ""
-    )
+) -> None:
+    assignee_username = get_assignee_username(github_issue)
 
     for comment in github_issue.get_comments():
-        processor.store_issue_comment(IssueComment(
-            project=project,
-            issue_id=github_issue.number,
-            id=comment.id,
-            username=comment.user.login,
-            body=comment.body,
-            created_at=comment.created_at,
-        ))
+        processor.store_issue_comment(
+            IssueComment(
+                project=project,
+                issue_id=github_issue.number,
+                id=comment.id,
+                username=comment.user.login,
+                body=comment.body,
+                created_at=comment.created_at,
+            )
+        )
 
         # Store a comment event
-        processor.store_issue_event(IssueEvent(
-            project=project,
-            id=github_issue.number,
-            related_object_id=comment.id,
-            parent_id=0,
-            type=IssueEventType.COMMENT_ADDED,
-            assignee_username=assignee_username,
-            timestamp=comment.created_at,
-        ))
+        processor.store_issue_event(
+            IssueEvent(
+                project=project,
+                id=github_issue.number,
+                related_object_id=comment.id,
+                parent_id=0,
+                type=IssueEventType.COMMENT_ADDED,
+                assignee_username=assignee_username,
+                timestamp=comment.created_at,
+            )
+        )
 
 
 def load_github_project_issues(
@@ -118,7 +127,7 @@ def load_github_project_issues(
     access_token: str,
     owner: str,
     repo: str,
-):
+) -> None:
     client = Github(access_token)
     project = Project(
         source_system=SourceSystemType.GITHUB,
